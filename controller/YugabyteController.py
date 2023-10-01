@@ -12,11 +12,11 @@ class YugaByteDBController():
 
     def connect(self):
         self.conn_dwh = psycopg2.connect(
-            user=self.params['dwh_postgres_user'],
-            password=self.params['dwh_postgres_pass'],
-            host=self.params['dwh_postgres_host'],
-            port=self.params['dwh_postgres_port'],
-            dbname=self.params['dwh_postgres_dbname'],
+            user=self.params['yugabyte_user'],
+            password=self.params['yugabyte_pass'],
+            host=self.params['yugabyte_host'],
+            port=self.params['yugabyte_port'],
+            dbname=self.params['yugabyte_dbname'],
             # load_balance = 'true'
         )
         self.conn_dwh.set_session(autocommit=True)
@@ -51,7 +51,7 @@ class YugaByteDBController():
         return pd_data
     
     def close(self):
-        self.conn.close()
+        self.conn_dwh.close()
         logger.info("YugaByteDB close successfully!!!")
 
     def __del__(self): 
