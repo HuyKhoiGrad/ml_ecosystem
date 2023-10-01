@@ -1,14 +1,24 @@
 import os
-from rediscluster import RedisCluster
+import redis
+from application.utils.Logging import Logger
+
+
+logger = Logger('Redis Controller')
 
 class RedisOnlineStore():
     def __init__(self, params):
         self.params = params
 
     def connect(self):
-        self.master = RedisCluster(startup_nodes=self.params['cluster'], 
+        # self.master = RedisCluster(startup_nodes=self.params['cluster'], 
+        #                              password=self.params['password'], 
+        #                              decode_responses=True)
+        self.master = redis.Redis(host = self.params['host'],
+                                   port = self.params['port'],
                                      password=self.params['password'], 
                                      decode_responses=True)
+        
+        logger.info('Redis Connect success')
         
     def insertValueRedis(self, name, key, data):
         try:
@@ -33,5 +43,5 @@ class RedisOnlineStore():
         return self.master.hgetall(key)
 
     def __del__(self):
-        print('Close Redis connection!')
+        logger.info('Close Redis connection!')
         self.master.connection.disconnect()

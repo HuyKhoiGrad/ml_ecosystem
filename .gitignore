@@ -158,4 +158,7 @@ images/
 checkpoints/
 *.ipynb
 .DS_Store
-ConsumptionDE35Hour.txt
+ConsumptionDE35Hour.txt*.csv
+*/experiments/*
+__pycache__/
+datas

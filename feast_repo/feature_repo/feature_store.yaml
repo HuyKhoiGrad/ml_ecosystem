@@ -1,0 +1,16 @@
+project: ml_ecosystem
+provider: local
+registry:
+    ../application/data
+online_store:
+    type: redis
+    connection_string: "localhost:6379,password=6gGXUqYVrJ"
+offline_store:
+    type: postgres
+    host: localhost
+    port: 5433
+    database: ml_ecosystem
+    db_schema: public
+    user: admin
+    password: yugabyte
+entity_key_serialization_version: 2
