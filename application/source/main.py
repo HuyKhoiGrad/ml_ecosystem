@@ -14,7 +14,7 @@ from application.source.train import (
     split_data,
 )
 from application.source.dataloader import MyDataset
-from application.source import config
+from application import config
 
 
 def parse_arguments():

@@ -12,7 +12,7 @@
     <div class="mb-3">
 		<label for="formFile" class="form-label fw-bold">Chọn file input</label>
 		<input class="form-control" type="file" id="formFile" name="file">
-		<div class="text-nowrap d-flex ms-2"><button type="submit" class="btn btn-primary">Run predict</button></div>
+		<div class="text-nowrap d-flex ms-2" style="margin-top: 10px;"><button type="submit" class="btn btn-primary">Run predict</button></div>
 	</div>
 </form>
 <p>
@@ -26,8 +26,8 @@
 	  {% endif %}
 	{% endwith %}
 </p>
-{% if filename %}
+<!-- {% if filename %} -->
 	<div style="width: 100%; text-align: center; position: relative;">
-		<img src="{{ url_for('static', filename='/uploads/' + filename) }}">
+		<img src="{{ url_for('static', filename=filename) }}">
 	</div>
-{% endif %}
+<!-- {% endif %} -->

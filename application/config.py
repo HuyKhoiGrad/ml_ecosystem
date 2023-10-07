@@ -11,3 +11,7 @@ NUM_EPOCH = 10
 
 # MLflow
 MLFLOW_ENDPOINT = "http://localhost:5000"
+BEST_RUN_ID = "4c3d9d7ef686428da6554f7399fbd4d6"
+
+# API
+STATIC = f"{root}/application/api/static"

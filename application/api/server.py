@@ -19,6 +19,9 @@ from flask import (
 )
 from flask_restful import Api, Resource
 
+from application.api.utils import run_predict
+from application import config
+
 
 app = Flask(
     __name__,
@@ -48,20 +51,21 @@ def allowed_file(filename):
 def predict():
     start_time = time.time()
     if request.method.lower() == "post":
-        try:
-            print("hello")
-            if "file" not in request.files:
-                return jsonify(dict(error=1, message="Data invaild"))
-            file = request.files["file"]
-            if file.filename == "":
-                return jsonify(dict(error=1, message="Data invaild"))
-            if file and allowed_file(file.filename):
-                # read file here
-                file_contents = file.readlines()
-                print(file_contents)
-                return jsonify(dict(error=0, data="test"))
-        except:
-            return jsonify(dict(error=1, message="Something Error"))
+        # try:
+        print("hello")
+        if "file" not in request.files:
+            return jsonify(dict(error=1, message="Data invaild"))
+        file = request.files["file"]
+        if file.filename == "":
+            return jsonify(dict(error=1, message="Data invaild"))
+        if file and allowed_file(file.filename):
+            # read file here
+            file_contents = file.readlines()
+            avg_loss, image_name = run_predict(file_contents)
+            flash(f"Average loss: {avg_loss}")
+            return render_template("upload.html", filename=image_name)
+    # except:
+    #     return jsonify(dict(error=1, message="Something Error"))
     return render_template("upload.html")
 
 
