@@ -17,6 +17,7 @@ class YugaByteDBController():
             host=self.params['yugabyte_host'],
             port=self.params['yugabyte_port'],
             dbname=self.params['yugabyte_dbname'],
+            options="-c search_path=energy,public"
             # load_balance = 'true'
         )
         self.conn_dwh.set_session(autocommit=True)
@@ -44,11 +45,22 @@ class YugaByteDBController():
                 print(str(ex))
                 logger.info("[SQL: {} - With Data: {} - Error: {}]".format(v_sql, list(data.values()), str(ex)))
 
-    def query(self, sql, col_name):
+    def get_data(self, sql, col_name):
         self.cursor.execute(sql)
         data = self.cursor.fetchall()
         pd_data = pd.DataFrame(data, columns = col_name)
         return pd_data
+    
+    def get_all_table(self, schema):
+        self.cursor.execute(f"""SELECT table_name FROM information_schema.tables
+                        WHERE table_schema = '{schema}'""")
+        for table in self.cursor.fetchall():
+            print(table)
+    
+    def query(self, sql): 
+        self.cursor.execute(sql)
+        data = self.cursor.fetchall()
+        return data
     
     def close(self):
         self.conn_dwh.close()
