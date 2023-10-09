@@ -163,3 +163,5 @@ ConsumptionDE35Hour.txt*.csv
 __pycache__/
 datas
 feature_store/
+environments/
+.vscode/

@@ -9,12 +9,14 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
+            "python": "/Users/khoi.vo/Documents/python39/bin/python",
             "cwd": "${workspaceRoot}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             },
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            "envFile": "${workspaceFolder}/environments/.env"
         }
     ]
 }
