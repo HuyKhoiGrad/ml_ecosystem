@@ -46,7 +46,7 @@ def split_data(X, y, train_size=0.8):
     return X_train, y_train, X_test, y_test
 
 
-def train(train_loader, num_epochs, path_save_ckp):
+def train(train_loader, num_epochs, path_save_ckp, test_loader=None):
     # Initialize the model
     model = MyModel()
 
@@ -83,6 +83,20 @@ def train(train_loader, num_epochs, path_save_ckp):
         avg_loss = total_loss / len(train_loader)
         check_loss.append(avg_loss)
 
+        # evaluate
+        if test_loader is not None:
+            with torch.no_grad():
+                for batch_idx_eval, (x_batch_eval, y_batch_eval) in enumerate(
+                    test_loader
+                ):
+                    # Forward pass
+                    outputs = model(x_batch_eval)
+                    loss = criterion(outputs, y_batch_eval)
+
+                    total_loss += loss.item()
+            avg_loss_val = total_loss / len(test_loader)
+            mlflow.log_metric("loss_eval", avg_loss_val, step=epoch + 1)
+
         # Save best checkpoint
         if avg_loss < best_val_loss:
             torch.save(
@@ -94,7 +108,7 @@ def train(train_loader, num_epochs, path_save_ckp):
             mlflow.pytorch.log_model(model, "models")
 
         # Log metrics and parameters with MLflow
-        mlflow.log_metric("loss", avg_loss, step=epoch + 1)
+        mlflow.log_metric("loss_train", avg_loss, step=epoch + 1)
 
         # Print epoch information
         print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}")
@@ -150,22 +164,4 @@ def visualize_predictions(model, data_loader, name, path_save_plot):
 
 
 if __name__ == "__main__":
-    # data = read_dataframe("ConsumptionDE35Hour.txt")
-    # data = post_process_data(data)
-    # X, y = feature_engineer(data)
-    # X_train, y_train, X_test, y_test = split_data(X, y)
-    # train_dataset = MyDataset(X_train, y_train)
-    # train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=False)
-    # test_dataset = MyDataset(X_test, y_test)
-    # test_loader = DataLoader(dataset=test_dataset, batch_size=128, shuffle=False)
-    # best_model = train(
-    #     train_loader,
-    #     num_epochs=10,
-    #     path_save_ckp="application/checkpoints",
-    # )
-    # eval_loss = eval(best_model, test_loader)
-    # print(">>> eval loss:", eval_loss)
-    # visualize_predictions(
-    #     best_model, test_loader, name="test", path_save_plot="application/images"
-    # )
     pass

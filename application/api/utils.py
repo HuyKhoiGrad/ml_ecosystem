@@ -112,21 +112,26 @@ def feature_engineer(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
 
 
 def read_content_file(file_contents: list) -> pd.DataFrame:
-    contents = [i.decode("utf-8").strip().split(";") for i in file_contents]
+    # contents = [i.decode("utf-8").strip().split(";") for i in file_contents]
+    contents = [i.strip().split(";") for i in file_contents]
     columns = contents[0]
     rows = contents[1:]
     df = pd.DataFrame(rows, columns=columns)
     return df
 
 
-def model_mlflow_predict(X_loader):
+def model_mlflow_predict(X_loader, loaded_model):
+    tmp: torch.Tensor = loaded_model.predict(X_loader)
+    return tmp.squeeze()
+
+
+def get_model_mlflow():
     mlflow.set_tracking_uri(config.MLFLOW_ENDPOINT)
     logged_model = f"runs:/{config.BEST_RUN_ID}/models"
 
     # Load model as a PyFuncModel.
     loaded_model = mlflow.pytorch.load_model(logged_model)
-    tmp = loaded_model.predict(X_loader)
-    return tmp
+    return loaded_model
 
 
 def run_predict(file_contents: list):
@@ -137,9 +142,10 @@ def run_predict(file_contents: list):
     test_dataset = MyDataset(X, y)
     test_loader = DataLoader(dataset=test_dataset, batch_size=32, shuffle=False)
     total_loss = 0
+    model_mlflow = get_model_mlflow()
     with torch.no_grad():
         for batch_idx, (x_batch, y_batch) in enumerate(test_loader):
-            outputs = model_mlflow_predict(x_batch)
+            outputs = model_mlflow_predict(x_batch, model_mlflow)
 
             # for calculate loss
             loss = criterion(outputs, y_batch)
@@ -162,3 +168,100 @@ def run_predict(file_contents: list):
     avg_loss = total_loss / len(test_loader)
     print(f"Test Loss: {avg_loss:.4f}")
     return avg_loss, "plot.png"
+
+
+def get_init_X_1(data_specific: pd.DataFrame, hour_look_back: int = 24) -> list:
+    df = data_specific.copy()
+    for i in range(1, hour_look_back + 1):
+        df[f"last{i}"] = df["TotalCon"].shift(fill_value=0, periods=i)
+    features = [f"last{i}" for i in range(1, hour_look_back + 1)]
+    target = "TotalCon"
+    X = df[features].values.astype(dtype=float).tolist()
+    # return torch.tensor(X[-1]).unsqueeze(0).to(torch.float32)
+    return X[-1]
+
+
+def get_init_X_2(data_specific: pd.DataFrame, hour_look_back: int = 24):
+    df = data_specific.copy()
+    for i in range(1, hour_look_back + 1):
+        df[f"last{i}"] = df["TotalCon"].shift(fill_value=0, periods=i)
+    features = [f"last{i}" for i in range(1, hour_look_back + 1)]
+    target = "TotalCon"
+    X = df[features].values.astype(dtype=float)
+    y = df[target].values.astype(dtype=float)
+    return X, y
+
+
+def read_dataframe(path: str) -> pd.DataFrame:
+    df = pd.read_csv(path, delimiter=";")
+    return df
+
+
+def get_result_next_n_hours(
+    n: int, device_type: int, area: str, data: pd.DataFrame
+) -> list[float]:
+    test_data = data[
+        (data["ConsumerType_DE35"] == device_type) & (data["PriceArea"] == area)
+    ].iloc[:25]
+    init_X = get_init_X_1(test_data)
+    model_mlflow = get_model_mlflow()
+    result = []
+    for i in range(n):
+        x = init_X[-24:]
+        x_batch = torch.tensor(x).unsqueeze(0).to(torch.float32)
+        y_pred = model_mlflow_predict(x_batch, model_mlflow)
+        init_X.append(y_pred.item())
+        result.append(y_pred.item())
+    return result
+
+
+def get_result_pass_n_hours(
+    n: int, device_type: int, area: str, data: pd.DataFrame
+) -> tuple[list, list]:
+    test_data = data[
+        (data["ConsumerType_DE35"] == device_type) & (data["PriceArea"] == area)
+    ].iloc[: n + 25]
+    X, y = get_init_X_2(data_specific=test_data)
+    x_batch = torch.tensor(X).to(torch.float32)
+    model_mlflow = get_model_mlflow()
+    y_pred = model_mlflow_predict(x_batch, model_mlflow)
+    return y.tolist()[25:], y_pred.tolist()[25:]
+
+
+def visualize_for_streamlit(future: list, pass_label: list, pass_pred: list):
+    plt.figure(figsize=(10, 6))
+    plt.plot(pass_label, label="Ground Truth", marker="o", linestyle="-")
+    plt.plot(pass_pred + future, label="Predictions", marker="o", linestyle="--")
+    plt.xlabel("Time Step")
+    plt.ylabel("Value")
+    plt.title(f"Model Predictions vs Ground Truth - Predict data")
+    plt.legend()
+    # plt.show()
+    plt.savefig(f"{config.STATIC}/plot.png")
+
+
+def run_streamlit(
+    area_choice: str,
+    device_type_choice: int,
+    number_last_hour: int,
+    number_next_hour: int,
+):
+    data = read_dataframe(config.PATH_DATA)
+    data = post_process_data(data)
+    future = get_result_next_n_hours(
+        n=number_next_hour,
+        area=area_choice,
+        device_type=device_type_choice,
+        data=data,
+    )
+    pass_gt, pass_pred = get_result_pass_n_hours(
+        n=number_last_hour,
+        area=area_choice,
+        device_type=device_type_choice,
+        data=data,
+    )
+    visualize_for_streamlit(future=future, pass_label=pass_gt, pass_pred=pass_pred)
+
+
+if __name__ == "__main__":
+    pass

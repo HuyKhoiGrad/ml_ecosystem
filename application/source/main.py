@@ -51,7 +51,7 @@ def main():
 
     # Start to do actions
     if args.do_train:
-        train(train_loader, config.NUM_EPOCH, config.DIR_SAVE_CKP)
+        train(train_loader, config.NUM_EPOCH, config.DIR_SAVE_CKP, test_loader)
     if args.do_test:
         model = torch.load(os.path.join(config.DIR_SAVE_CKP, "best_model.pt"))
         score = eval(model, test_loader)
