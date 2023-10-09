@@ -159,3 +159,6 @@ checkpoints/
 *.ipynb
 .DS_Store
 ConsumptionDE35Hour.txt
+
+dataset/
+experiments/
