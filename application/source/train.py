@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from dataloader import MyDataset
 from model import MyModel
 from loss import RMSELoss
+from application import config
 
 
 def read_dataframe(path: str) -> pd.DataFrame:
@@ -163,5 +164,55 @@ def visualize_predictions(model, data_loader, name, path_save_plot):
             break  # Visualize only the first batch of data
 
 
+def train_1_batch(
+    x_batch,
+    y_batch,
+    model,
+    optimizer,
+    criterion,
+    path_save_ckp,
+    id: str = "",
+    best_val_loss: float = 10**6,
+):
+    outputs = model(x_batch)
+    loss = criterion(outputs, y_batch)
+
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+    if loss.item() < best_val_loss:
+        torch.save(
+            model,
+            f"{path_save_ckp}/best_model.pt",
+        )
+        best_model = copy.deepcopy(model)
+        best_val_loss = loss.item()
+        mlflow.pytorch.log_model(model, "models_online")
+    torch.save(
+        model,
+        f"{path_save_ckp}/{id}.pt",
+    )
+
+
 if __name__ == "__main__":
-    pass
+    model = torch.load("application/checkpoints/best_model.pt")
+    # model.eval()
+    criterion = RMSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    data = read_dataframe(config.PATH_DATA)
+    data = post_process_data(data)
+    X, y = feature_engineer(data)
+    X_train, y_train, X_test, y_test = split_data(X, y)
+    train_dataset = MyDataset(X_train, y_train)
+    train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=False)
+    for batch_idx, (x_batch, y_batch) in enumerate(train_loader):
+        train_1_batch(
+            x_batch=x_batch,
+            y_batch=y_batch,
+            model=model,
+            optimizer=optimizer,
+            criterion=criterion,
+            path_save_ckp=config.DIR_SAVE_CKP_ONLINE,
+            id="0",
+        )
+        break

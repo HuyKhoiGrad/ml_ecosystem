@@ -159,3 +159,4 @@ checkpoints/
 *.ipynb
 .DS_Store
 ConsumptionDE35Hour.txt
+checkpoints_online
