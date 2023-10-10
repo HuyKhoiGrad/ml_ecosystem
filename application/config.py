@@ -4,6 +4,7 @@ import os
 root = os.getcwd()
 PATH_DATA = f"{root}/application/data/ConsumptionDE35Hour.txt"
 DIR_SAVE_CKP = f"{root}/application/checkpoints"
+DIR_SAVE_CKP_ONLINE = f"{root}/application/checkpoints_online"
 DIR_SAVE_IMG = f"{root}/application/images"
 
 # Hyper parameter
