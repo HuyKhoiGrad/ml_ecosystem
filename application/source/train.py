@@ -22,13 +22,16 @@ def post_process_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values(by="HourUTC")
     return df
 
-
-def feature_engineer(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
-    hour_look_back = 24
+def transform(df: pd.DataFrame, hour_look_back: int = 24) -> pd.DataFrame:
     for i in range(1, hour_look_back + 1):
         df[f"last{i}"] = df.groupby(["ConsumerType_DE35", "PriceArea"])[
             "TotalCon"
         ].shift(fill_value=0, periods=i)
+    return df
+
+def feature_engineer(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    hour_look_back = 24
+    df = transform(df = df, hour_look_back=hour_look_back) 
     features_1 = [f"last{i}" for i in range(1, hour_look_back + 1)]
     # features_2 = ["ConsumerType_DE35", "PriceArea"]
     features_2 = []
