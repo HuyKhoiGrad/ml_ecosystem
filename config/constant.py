@@ -6,3 +6,10 @@ FEATURE_VIEW_INF_NAME = 'energy_consumption_onl_view'
 FEATURE_VIEW_INF_VERSION = 1
 FEATURE_VIEW_ONL_NAME = ''
 FEATURE_VIEW_ONL_VERSION = ''
+
+SOURCE_DATA_COLUMNS = ['"HourUTC"', '"HourDK"', '"PriceArea"', '"ConsumerType_DE35"', '"TotalCon"']
+
+INIT_HOURDK_DATA_INGEST = '2023-05-31 23:00:00'
+
+REDIS_INFERENCE_NAME = 'checkpoint'
+REDIS_INFERENCE_KEY = 'latest_date'
