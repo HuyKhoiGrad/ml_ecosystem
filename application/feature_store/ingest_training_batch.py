@@ -44,15 +44,3 @@ def exec_ingest_source_data():
     current_df = get_source_data(curr_time = current_time, cols = SOURCE_DATA_COLUMNS, source_db = source_db)
 
     ingest_batch_data(feature_group, data_source = current_df)
-
-
-
-    
-
-
-
-
-    
-
-
-
