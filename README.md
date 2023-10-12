@@ -9,4 +9,3 @@
 |deployment|folder contains kubernetes file|
 |docker|folder contains docker files|
 |environments|environment file for all env variable used in project|
-test
