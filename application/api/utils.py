@@ -263,5 +263,24 @@ def run_streamlit(
     visualize_for_streamlit(future=future, pass_label=pass_gt, pass_pred=pass_pred)
 
 
+def inference_batch(df_input: pd.DataFrame) -> pd.DataFrame:
+    model_mlflow = get_model_mlflow()
+    x_df = df_input[[f"last{i}" for i in range(1, 24)] + ["TotalCon"]]
+    x = x_df.values
+    x_batch = torch.tensor(x).unsqueeze(0).to(torch.float32)
+    y_pred = model_mlflow_predict(x_batch, model_mlflow)
+    df_input["pred"] = y_pred.detach().numpy().tolist()
+    return df_input
+
+
 if __name__ == "__main__":
-    pass
+    df = read_dataframe("ConsumptionDE35Hour.txt")
+    df = post_process_data(df)
+    hour_look_back = 24
+    for i in range(1, hour_look_back + 1):
+        df[f"last{i}"] = df.groupby(["ConsumerType_DE35", "PriceArea"])[
+            "TotalCon"
+        ].shift(fill_value=0, periods=i)
+    test_df = df.tail()
+    result_df = inference_batch(df_input=test_df)
+    print(result_df)
