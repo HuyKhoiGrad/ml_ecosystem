@@ -1,0 +1,14 @@
+FROM python:3.10-slim-buster
+
+ARG MLFLOW_TRACKING_DIRECTORY
+ENV MLFLOW_TRACKING_DIRECTORY=${MLFLOW_TRACKING_DIRECTORY}
+
+# Install python packages
+COPY requirements.txt /tmp
+RUN pip install -r /tmp/requirements.txt
+RUN echo ${MLFLOW_TRACKING_DIRECTORY} > test.txt
+
+CMD mlflow server \
+    --backend-store-uri ${MLFLOW_TRACKING_DIRECTORY}/tracking \
+    --default-artifact-root ${MLFLOW_TRACKING_DIRECTORY}/artifacts \
+    --host 0.0.0.0

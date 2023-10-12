@@ -1,0 +1,13 @@
+services:
+  web:
+    restart: always
+    build:
+      context: .
+      args:
+        - "MLFLOW_TRACKING_DIRECTORY=${HOME}/mnt/mlruns"
+    image: mlflow_server
+    container_name: mlflow_server
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    volumes:
+      - "${HOME}/mnt/mlruns:${HOME}/mnt/mlruns"

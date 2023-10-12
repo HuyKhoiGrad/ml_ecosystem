@@ -14,8 +14,7 @@ class RedisOnlineStore():
         #                              password=self.params['password'], 
         #                              decode_responses=True)
         self.master = redis.Redis(host = self.params['host'],
-                                   port = self.params['port'],
-                                     password=self.params['password'], 
+                                   port = self.params['port'], 
                                      decode_responses=True)
         
         logger.info('Redis Connect success')
@@ -23,8 +22,9 @@ class RedisOnlineStore():
     def insertValueRedis(self, name, key, data):
         try:
             self.master.hset(name, key, data)
+            logger.info(f'Inserted value success for name:{name} - key:{key}')
         except Exception as ex:
-            print(ex)
+            logger.error(ex)
 
     def insertMany(self, name, dataset):
         try:
@@ -41,7 +41,3 @@ class RedisOnlineStore():
     
     def hgetallByKey(self, key):
         return self.master.hgetall(key)
-
-    def __del__(self):
-        logger.info('Close Redis connection!')
-        self.master.connection.disconnect()
