@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
+from hsfs.feature import Feature
 
 from controller.YugabyteController import YugaByteDBController
 from config.DatabaseConfig import YugabyteConfig
@@ -23,7 +24,7 @@ def get_source_data(curr_time: str, cols: list, source_db:YugaByteDBController) 
 
 def ingest_batch_data(feature_group, data_source: pd.DataFrame):
     data = transform(data_source, 24)
-    data['eventtime'] = data['HourDK'].values.astype(np.int64)
+    data['eventtime'] = data['HourUTC'].values.astype(np.int64)
     feature_group.insert(features=data)
     logger.info("Online training data ingest success")
 
@@ -38,9 +39,11 @@ def exec_ingest_source_data():
     redis.connect()
     
     latest_checkpoint = int(redis.getDataByKey(name = REDIS_INFERENCE_NAME, value = REDIS_INFERENCE_KEY))
-    current_mill = latest_checkpoint + 3600000
+    current_mill = latest_checkpoint
     current_time = datetime.fromtimestamp(current_mill / 1000)
 
     current_df = get_source_data(curr_time = current_time, cols = SOURCE_DATA_COLUMNS, source_db = source_db)
 
     ingest_batch_data(feature_group, data_source = current_df)
+
+    redis.insertValueRedis(name = REDIS_INFERENCE_NAME, value = REDIS_INFERENCE_KEY, data = str(current_mill))

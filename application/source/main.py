@@ -14,7 +14,7 @@ from application.source.train import (
     split_data,
 )
 from application.source.dataloader import MyDataset
-from application import config
+from config.constant import *
 
 
 def parse_arguments():
@@ -33,11 +33,12 @@ def parse_arguments():
 
 def main():
     args = parse_arguments()
+    mlflow_endpoint = os.getenv('MLFLOW_ENDPOINT')
     # Configure the MLflow client to connect to your MLflow service.
-    mlflow.set_tracking_uri(config.MLFLOW_ENDPOINT)
+    mlflow.set_tracking_uri(mlflow_endpoint)
 
     # Load data
-    data = read_dataframe(config.PATH_DATA)
+    data = read_dataframe(PATH_DATA, checkpoint = INIT_HOURUTC_DATA_INGEST)
     data = post_process_data(data)
     X, y = feature_engineer(data)
     X_train, y_train, X_test, y_test = split_data(X, y)
@@ -51,15 +52,15 @@ def main():
 
     # Start to do actions
     if args.do_train:
-        train(train_loader, config.NUM_EPOCH, config.DIR_SAVE_CKP, test_loader)
+        train(train_loader, NUM_EPOCH, DIR_SAVE_CKP, test_loader)
     if args.do_test:
-        model = torch.load(os.path.join(config.DIR_SAVE_CKP, "best_model.pt"))
+        model = torch.load(os.path.join(DIR_SAVE_CKP, "best_model.pt"))
         score = eval(model, test_loader)
         mlflow.log_param("Test score", score)
     if args.do_visualize:
-        model = torch.load(os.path.join(config.DIR_SAVE_CKP, "best_model.pt"))
+        model = torch.load(os.path.join(DIR_SAVE_CKP, "best_model.pt"))
         visualize_predictions(
-            model, test_loader, name="test", path_save_plot=config.DIR_SAVE_IMG
+            model, test_loader, name="test", path_save_plot=DIR_SAVE_IMG
         )
     # End MLflow run
     mlflow.end_run()

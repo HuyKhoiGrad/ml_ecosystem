@@ -8,6 +8,7 @@ from application.utils.Logging import Logger
 
 from controller.HopsworksController import FeatureStoreController
 from controller.RedisController import RedisOnlineStore
+from controller.YugabyteController import YugaByteDBController
 from config.RedisConfig import RedisClusterConnection
 
 logger = Logger("Get_online_inference_feature")
@@ -26,19 +27,25 @@ def init_feature_view(curr_time:str, feature_group, store, fv_name, fv_version):
 def get_batch_inference(store, curr_time, feature_group = None) -> list:
     fg_name = FEATURE_GROUP_ONL_NAME
     fg_version = FEATURE_GROUP_ONL_VERSION
-    start_time = time.time()
+    
     if feature_group == None:
         feature_group = store.get_feature_group(name = fg_name, version = fg_version)
-
+    start_time = time.time()
     batch_data = feature_group.select_all().filter((Feature("eventtime") == curr_time)).read()
 
-    cols = [f"last{i}" for i in range(23,0,-1)]
+    cols = [f"last{i}" for i in range(1,24)]
     cols.extend(["totalcon"])
     batch_data = batch_data[cols]
-    feature_vector = batch_data.values.tolist()
 
     run_time = time.time() - start_time
     logger.info(f"Inference vector retrieve success in {run_time}")
+    return batch_data
+
+def ingest_predict_to_source(predict_df: pd.DataFrame, source_db: YugaByteDBController):
+    source_db.insert_data(table_name='predict_consumption',
+                          update_data= predict_df,
+                          constraint_key='key')
+
 
 def execute_batch_inference(**kwargs):
     store = FeatureStoreController()
@@ -47,10 +54,14 @@ def execute_batch_inference(**kwargs):
     redis_config = RedisClusterConnection().getConfig()
     redis = RedisOnlineStore(redis_config)
     redis.connect()
-    
     exec_date = redis.getDataByKey(name= REDIS_INFERENCE_NAME, key = REDIS_INFERENCE_KEY)
 
-    get_batch_inference(store, exec_date, feature_group)
+    feature_vector = get_batch_inference(store, exec_date, feature_group)
+    
+    # Run model prediction 
+
+    exec_date += 3600000
+    redis.insertValueRedis(name= REDIS_INFERENCE_NAME, key = REDIS_INFERENCE_KEY, data = exec_date)
 
 
 

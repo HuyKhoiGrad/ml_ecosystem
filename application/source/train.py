@@ -11,8 +11,9 @@ from application.source.model import MyModel
 from application.source.loss import RMSELoss
 
 
-def read_dataframe(path: str) -> pd.DataFrame:
+def read_dataframe(path: str, checkpoint) -> pd.DataFrame:
     df = pd.read_csv(path, delimiter=";")
+    df = df[df['HourUTC'] <= checkpoint]
     return df
 
 

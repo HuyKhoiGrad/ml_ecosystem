@@ -14,7 +14,8 @@ class FeatureStoreController():
             version = version,
             primary_key = primary_key,
             event_time = event_time,
-            online_enabled = online_enabled
+            online_enabled = online_enabled,
+            stream= True
         )
         feature_group.insert(ingest_data) 
     
