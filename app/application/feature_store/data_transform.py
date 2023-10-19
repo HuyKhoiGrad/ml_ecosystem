@@ -1,6 +1,6 @@
 import pandas as pd 
 
-from application.source.train import post_process_data, transform
+from app.application.source.train import post_process_data, transform
 
 
 def create_batch_data(df: pd.DataFrame) -> pd.DataFrame:

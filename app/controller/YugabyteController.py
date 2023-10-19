@@ -1,7 +1,7 @@
 import pandas as pd 
 import psycopg2
 
-from application.utils.Logging import Logger
+from app.application.utils.Logging import Logger
 
 
 logger = Logger('YugaByteDB Controller')

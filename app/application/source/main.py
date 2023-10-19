@@ -4,7 +4,7 @@ import torch
 import mlflow
 from torch.utils.data import DataLoader
 
-from application.source.train import (
+from app.application.source.train import (
     train,
     eval,
     visualize_predictions,
@@ -13,8 +13,8 @@ from application.source.train import (
     feature_engineer,
     split_data,
 )
-from application.source.dataloader import MyDataset
-from config.constant import *
+from app.application.source.dataloader import MyDataset
+from app.config.constant import *
 
 
 def parse_arguments():

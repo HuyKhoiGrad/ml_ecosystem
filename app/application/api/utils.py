@@ -1,14 +1,17 @@
+import os 
 import pandas as pd
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import mlflow
+from config.constant import *
+from datetime import datetime
 
 import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
 
-from application import config
+from app.application import config
 
 matplotlib.use("Agg")
 
@@ -121,13 +124,13 @@ def read_content_file(file_contents: list) -> pd.DataFrame:
 
 
 def model_mlflow_predict(X_loader, loaded_model):
-    tmp: torch.Tensor = loaded_model.predict(X_loader)
+    tmp: torch.Tensor = loaded_model(X_loader)
     return tmp.squeeze()
 
 
-def get_model_mlflow():
-    mlflow.set_tracking_uri(config.MLFLOW_ENDPOINT)
-    logged_model = f"runs:/{config.BEST_RUN_ID}/models"
+def get_model_mlflow(end_point, run_id):
+    mlflow.set_tracking_uri(end_point)
+    logged_model = f"runs:/{run_id}/models"
 
     # Load model as a PyFuncModel.
     loaded_model = mlflow.pytorch.load_model(logged_model)
@@ -263,9 +266,8 @@ def run_streamlit(
     visualize_for_streamlit(future=future, pass_label=pass_gt, pass_pred=pass_pred)
 
 
-def inference_batch(df_input: pd.DataFrame) -> pd.DataFrame:
-    model_mlflow = get_model_mlflow()
-    x_df = df_input[[f"last{i}" for i in range(1, 24)] + ["TotalCon"]]
+def inference_batch(df_input: pd.DataFrame, model_mlflow) -> pd.DataFrame:
+    x_df = df_input[[f"last{i}" for i in range(1, 24)] + ["totalcon"]]
     x = x_df.values
     x_batch = torch.tensor(x).unsqueeze(0).to(torch.float32)
     y_pred = model_mlflow_predict(x_batch, model_mlflow)
@@ -273,14 +275,29 @@ def inference_batch(df_input: pd.DataFrame) -> pd.DataFrame:
     return df_input
 
 
+def datetime2milli(datestr: str, format : str = '%Y-%m-%d %H:%M:%S'):
+    dt_obj = datetime.strptime(datestr, format= format)
+    millisec = dt_obj.timestamp() * 1000
+    return millisec
+
+
+def milli2datetime(millisec: int):
+    my_datetime = datetime.fromtimestamp(millisec / 1000)  # Apply fromtimestamp function
+    return my_datetime
+
+
 if __name__ == "__main__":
-    df = read_dataframe("ConsumptionDE35Hour.txt")
+    df = read_dataframe("application/dataset/ConsumptionDE35Hour.txt")
     df = post_process_data(df)
     hour_look_back = 24
     for i in range(1, hour_look_back + 1):
         df[f"last{i}"] = df.groupby(["ConsumerType_DE35", "PriceArea"])[
             "TotalCon"
         ].shift(fill_value=0, periods=i)
+    mlflow_endpoint = os.getenv('MLFLOW_ENDPOINT')
+    print(">>>", mlflow_endpoint)
+    model = get_model_mlflow(end_point=mlflow_endpoint, run_id = BEST_RUN_ID)
+    print(model)
     test_df = df.tail()
-    result_df = inference_batch(df_input=test_df)
+    result_df = inference_batch(df_input=test_df, model_mlflow = model)
     print(result_df)

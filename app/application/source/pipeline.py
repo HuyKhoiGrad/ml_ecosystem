@@ -6,12 +6,12 @@ import torch
 import mlflow
 from torch.utils.data import DataLoader
 
-from controller.HopsworksController import FeatureStoreController
-from controller.RedisController import RedisOnlineStore
-from config.RedisConfig import RedisClusterConnection
-from config.constant import *
-from application.source.train import train, split_data
-from application.source.dataloader import MyDataset
+from app.controller.HopsworksController import FeatureStoreController
+from app.controller.RedisController import RedisOnlineStore
+from app.config.RedisConfig import RedisClusterConnection
+from app.config.constant import *
+from app.application.source.train import train, split_data
+from app.application.source.dataloader import MyDataset
 
 
 mlflow_endpoint = os.getenv('MLFLOW_ENDPOINT')

@@ -6,9 +6,9 @@ import copy
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 
-from application.source.dataloader import MyDataset
-from application.source.model import MyModel
-from application.source.loss import RMSELoss
+from app.application.source.dataloader import MyDataset
+from app.application.source.model import MyModel
+from app.application.source.loss import RMSELoss
 
 
 def read_dataframe(path: str, checkpoint) -> pd.DataFrame:

@@ -2,12 +2,12 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-from controller.HopsworksController import FeatureStoreController
-from controller.RedisController import RedisOnlineStore
-from config.RedisConfig import RedisClusterConnection
+from app.controller.HopsworksController import FeatureStoreController
+from app.controller.RedisController import RedisOnlineStore
+from app.config.RedisConfig import RedisClusterConnection
 
-from application.feature_store.data_transform import create_batch_data
-from config.constant import *
+from app.application.feature_store.data_transform import create_batch_data
+from app.config.constant import *
 
 
 df = pd.read_csv('application/dataset/ConsumptionDE35Hour.txt',delimiter=";")

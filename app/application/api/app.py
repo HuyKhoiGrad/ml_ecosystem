@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime, timedelta
 
-from application.api import utils
+from app.application.api import utils
 
 st.set_page_config(page_title="Consume prediction", page_icon="🚀", layout="wide")
 

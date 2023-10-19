@@ -3,13 +3,13 @@ import time
 from datetime import datetime
 from hsfs.feature import Feature
 
-from config.constant import *
-from application.source.train import train_1_batch
-from application.utils.Logging import Logger
+from app.config.constant import *
+from app.application.source.train import train_1_batch
+from app.application.utils.Logging import Logger
 
-from controller.HopsworksController import FeatureStoreController
-from controller.RedisController import RedisOnlineStore
-from config.RedisConfig import RedisClusterConnection
+from app.controller.HopsworksController import FeatureStoreController
+from app.controller.RedisController import RedisOnlineStore
+from app.config.RedisConfig import RedisClusterConnection
 
 logger = Logger("Online training pipeline")
 
@@ -40,3 +40,5 @@ def exec_online_training(**kwargs):
     data = create_online_training_data(store, current_time= exec_date) 
 
     # Run model training 
+
+    # Save model id to redis

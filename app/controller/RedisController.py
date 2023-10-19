@@ -1,6 +1,6 @@
 import os
 import redis
-from application.utils.Logging import Logger
+from app.application.utils.Logging import Logger
 
 
 logger = Logger('Redis Controller')
