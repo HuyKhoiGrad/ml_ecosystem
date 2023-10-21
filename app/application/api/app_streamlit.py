@@ -74,7 +74,7 @@ def main():
             number_last_hour=int(number_last_hour),
             number_next_hour=int(number_next_hour),
         )
-        st.image("application/api/static/plot.png")
+        st.image("app/application/api/static/plot.png")
 
 
 if __name__ == "__main__":

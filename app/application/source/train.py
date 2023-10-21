@@ -9,11 +9,21 @@ from torch.utils.data import DataLoader
 from app.application.source.dataloader import MyDataset
 from app.application.source.model import MyModel
 from app.application.source.loss import RMSELoss
+from app.config import constant
+
+
+def get_model_mlflow(run_id):
+    mlflow.set_tracking_uri(constant.MLFLOW_ENDPOINT)
+    logged_model = f"runs:/{run_id}/models"
+
+    # Load model as a PyFuncModel.
+    loaded_model = mlflow.pytorch.load_model(logged_model)
+    return loaded_model
 
 
 def read_dataframe(path: str, checkpoint) -> pd.DataFrame:
     df = pd.read_csv(path, delimiter=";")
-    df = df[df['HourUTC'] <= checkpoint]
+    df = df[df["HourUTC"] <= checkpoint]
     return df
 
 
@@ -23,6 +33,7 @@ def post_process_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values(by="HourUTC")
     return df
 
+
 def transform(df: pd.DataFrame, hour_look_back: int = 24) -> pd.DataFrame:
     for i in range(1, hour_look_back + 1):
         df[f"last{i}"] = df.groupby(["ConsumerType_DE35", "PriceArea"])[
@@ -30,11 +41,11 @@ def transform(df: pd.DataFrame, hour_look_back: int = 24) -> pd.DataFrame:
         ].shift(fill_value=0, periods=i)
     return df
 
+
 def feature_engineer(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
     hour_look_back = 24
-    df = transform(df = df, hour_look_back=hour_look_back) 
+    df = transform(df=df, hour_look_back=hour_look_back)
     features_1 = [f"last{i}" for i in range(1, hour_look_back + 1)]
-    # features_2 = ["ConsumerType_DE35", "PriceArea"]
     features_2 = []
     features = features_1 + features_2
     target = "TotalCon"
@@ -168,54 +179,44 @@ def visualize_predictions(model, data_loader, name, path_save_plot):
 
 
 def train_1_batch(
-    x_batch,
-    y_batch,
-    model,
-    optimizer,
-    criterion,
-    path_save_ckp,
-    id: str = "",
-    best_val_loss: float = 10**6,
+    df_input,
+    id,
 ):
-    outputs = model(x_batch)
-    loss = criterion(outputs, y_batch)
+    mlflow.set_tracking_uri(constant.MLFLOW_ENDPOINT)
+    mlflow.start_run()
+    x_df = df_input[[f"last{i}" for i in range(1, 25)]]
+    x = x_df.values
+    y = df_input["totalcon"].values
+    X = torch.tensor(x).unsqueeze(0).to(torch.float32)
+    y = torch.tensor(y).to(torch.float32)
+
+    model = get_model_mlflow(id)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    criterion = RMSELoss()
+    outputs = model(X)
+    loss = criterion(outputs, y)
 
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-    if loss.item() < best_val_loss:
-        torch.save(
-            model,
-            f"{path_save_ckp}/best_model.pt",
-        )
-        best_model = copy.deepcopy(model)
-        best_val_loss = loss.item()
-        mlflow.pytorch.log_model(model, "models_online")
-    torch.save(
-        model,
-        f"{path_save_ckp}/{id}.pt",
-    )
+    run = mlflow.active_run()
+    if run:
+        run_id = run.info.run_id
+        mlflow.pytorch.log_model(model, "models")
+        return run_id
+    return None
 
 
 if __name__ == "__main__":
-    model = torch.load("application/checkpoints/best_model.pt")
-    # model.eval()
-    criterion = RMSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    data = read_dataframe(config.PATH_DATA)
-    data = post_process_data(data)
-    X, y = feature_engineer(data)
-    X_train, y_train, X_test, y_test = split_data(X, y)
-    train_dataset = MyDataset(X_train, y_train)
-    train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=False)
-    for batch_idx, (x_batch, y_batch) in enumerate(train_loader):
-        train_1_batch(
-            x_batch=x_batch,
-            y_batch=y_batch,
-            model=model,
-            optimizer=optimizer,
-            criterion=criterion,
-            path_save_ckp=config.DIR_SAVE_CKP_ONLINE,
-            id="0",
-        )
-        break
+    print("hello")
+    df = read_dataframe(
+        "/Users/nguyenthinhquyen/source/ml_ecosystem/ConsumptionDE35Hour.txt",
+        checkpoint="2023-05-31 21:00:00",
+    )
+    df = df[:100]
+    df = post_process_data(df)
+    hour_look_back = 24
+    df = transform(df=df, hour_look_back=hour_look_back)
+    df = df.rename(columns={"TotalCon": "totalcon"})
+    a = train_1_batch(df_input=df, id="4c3d9d7ef686428da6554f7399fbd4d6")
+    print(a)

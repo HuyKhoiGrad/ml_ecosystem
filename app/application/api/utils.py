@@ -1,10 +1,11 @@
-import os 
+import os
 import pandas as pd
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import mlflow
-from config.constant import *
+from app.config import constant
+from app.config.constant import *
 from datetime import datetime
 
 import torch
@@ -145,7 +146,9 @@ def run_predict(file_contents: list):
     test_dataset = MyDataset(X, y)
     test_loader = DataLoader(dataset=test_dataset, batch_size=32, shuffle=False)
     total_loss = 0
-    model_mlflow = get_model_mlflow()
+    model_mlflow = get_model_mlflow(
+        end_point=constant.MLFLOW_ENDPOINT, run_id=constant.BEST_RUN_ID
+    )
     with torch.no_grad():
         for batch_idx, (x_batch, y_batch) in enumerate(test_loader):
             outputs = model_mlflow_predict(x_batch, model_mlflow)
@@ -207,7 +210,9 @@ def get_result_next_n_hours(
         (data["ConsumerType_DE35"] == device_type) & (data["PriceArea"] == area)
     ].iloc[:25]
     init_X = get_init_X_1(test_data)
-    model_mlflow = get_model_mlflow()
+    model_mlflow = get_model_mlflow(
+        end_point=constant.MLFLOW_ENDPOINT, run_id=constant.BEST_RUN_ID
+    )
     result = []
     for i in range(n):
         x = init_X[-24:]
@@ -226,7 +231,9 @@ def get_result_pass_n_hours(
     ].iloc[: n + 25]
     X, y = get_init_X_2(data_specific=test_data)
     x_batch = torch.tensor(X).to(torch.float32)
-    model_mlflow = get_model_mlflow()
+    model_mlflow = get_model_mlflow(
+        end_point=constant.MLFLOW_ENDPOINT, run_id=constant.BEST_RUN_ID
+    )
     y_pred = model_mlflow_predict(x_batch, model_mlflow)
     return y.tolist()[25:], y_pred.tolist()[25:]
 
@@ -275,14 +282,16 @@ def inference_batch(df_input: pd.DataFrame, model_mlflow) -> pd.DataFrame:
     return df_input
 
 
-def datetime2milli(datestr: str, format : str = '%Y-%m-%d %H:%M:%S'):
-    dt_obj = datetime.strptime(datestr, format= format)
+def datetime2milli(datestr: str, format: str = "%Y-%m-%d %H:%M:%S"):
+    dt_obj = datetime.strptime(datestr, format=format)
     millisec = dt_obj.timestamp() * 1000
     return millisec
 
 
 def milli2datetime(millisec: int):
-    my_datetime = datetime.fromtimestamp(millisec / 1000)  # Apply fromtimestamp function
+    my_datetime = datetime.fromtimestamp(
+        millisec / 1000
+    )  # Apply fromtimestamp function
     return my_datetime
 
 
@@ -294,10 +303,10 @@ if __name__ == "__main__":
         df[f"last{i}"] = df.groupby(["ConsumerType_DE35", "PriceArea"])[
             "TotalCon"
         ].shift(fill_value=0, periods=i)
-    mlflow_endpoint = os.getenv('MLFLOW_ENDPOINT')
+    mlflow_endpoint = os.getenv("MLFLOW_ENDPOINT")
     print(">>>", mlflow_endpoint)
-    model = get_model_mlflow(end_point=mlflow_endpoint, run_id = BEST_RUN_ID)
+    model = get_model_mlflow(end_point=mlflow_endpoint, run_id=BEST_RUN_ID)
     print(model)
     test_df = df.tail()
-    result_df = inference_batch(df_input=test_df, model_mlflow = model)
+    result_df = inference_batch(df_input=test_df, model_mlflow=model)
     print(result_df)
