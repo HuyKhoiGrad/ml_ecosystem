@@ -1,0 +1,16 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      PYTHONPATH: "$${PYTHONPATH}:/ml_ecosystem"
+    env_file:
+      - docker/.env
+    ports:
+      - 5050:5050
+    networks:
+      - api 
+networks:
+  api:
+    name: airflow_default

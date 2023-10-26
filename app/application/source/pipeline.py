@@ -1,7 +1,7 @@
 import os
 import pandas as pd  
 from datetime import datetime
-from hsfs.feature import Feature
+#from hsfs.feature import Feature
 import torch
 import mlflow
 from torch.utils.data import DataLoader
@@ -45,7 +45,7 @@ def train_pipeline():
     dt_obj = datetime.strptime(INIT_HOURUTC_DATA_INGEST,
                            '%Y-%m-%d %H:%M:%S')
     current_time = int(dt_obj.timestamp() * 1000)
-    batch_data = feature_group.select_all().filter((Feature("eventtime") <= current_time)).read()   
+    batch_data = feature_group.select_all().filter((feature_group["eventtime"] <= current_time)).read()   
     train_loader, test_loader = dataloader(batch_data, hour_look_back = 24)
     train(train_loader, NUM_EPOCH, DIR_SAVE_CKP, test_loader)
 

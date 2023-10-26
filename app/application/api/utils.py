@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import mlflow
-from config.constant import *
+from app.config.constant import *
 from datetime import datetime
 
 import torch
@@ -271,12 +271,12 @@ def inference_batch(df_input: pd.DataFrame, model_mlflow) -> pd.DataFrame:
     x = x_df.values
     x_batch = torch.tensor(x).unsqueeze(0).to(torch.float32)
     y_pred = model_mlflow_predict(x_batch, model_mlflow)
-    df_input["pred"] = y_pred.detach().numpy().tolist()
+    df_input["predict"] = y_pred.detach().numpy().tolist()
     return df_input
 
 
 def datetime2milli(datestr: str, format : str = '%Y-%m-%d %H:%M:%S'):
-    dt_obj = datetime.strptime(datestr, format= format)
+    dt_obj = datetime.strptime(datestr, format)
     millisec = dt_obj.timestamp() * 1000
     return millisec
 

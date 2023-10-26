@@ -21,7 +21,7 @@ x-airflow-common:
     - ../app/airflow/dags:/opt/airflow/dags
     - ../app/airflow/logs:/opt/airflow/logs
     - ../app/airflow/plugins:/opt/airflow/plugins
-  user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
+  user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"  
   depends_on:
     &airflow-common-depends-on
     postgres:

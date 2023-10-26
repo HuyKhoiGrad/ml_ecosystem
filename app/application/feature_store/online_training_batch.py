@@ -1,7 +1,7 @@
 import pandas as pd 
 import time
 from datetime import datetime
-from hsfs.feature import Feature
+#from hsfs.feature import Feature
 
 from app.config.constant import *
 from app.application.source.train import train_1_batch
@@ -19,8 +19,8 @@ def create_online_training_data(store: FeatureStoreController, current_time: str
     
     feature_group = store.get_feature_group(name = fg_name, version = fg_version)
     start_time = time.time()
-    batch_data = feature_group.select_all().filter((Feature("eventtime") <= current_time) & 
-                                                   (Feature("eventtime") > current_time - 3600000*24)).read()
+    batch_data = feature_group.select_all().filter((feature_group["eventtime"] <= current_time) & 
+                                                   (feature_group["eventtime"] > current_time - 3600000*24)).read()
 
     cols = [f"last{i}" for i in range(1,24)]
     cols.extend(["totalcon"])

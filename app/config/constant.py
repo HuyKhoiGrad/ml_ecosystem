@@ -14,17 +14,17 @@ INIT_HOURUTC_DATA_INGEST = '2023-05-31 21:00:00'
 REDIS_INFERENCE_NAME = 'checkpoint'
 REDIS_INFERENCE_KEY = 'latest_date'
 
-PATH_DATA = "application/dataset/ConsumptionDE35Hour.txt"
-DIR_SAVE_CKP = "application/weight"
-DIR_SAVE_CKP_ONLINE = "application/checkpoints_online"
-DIR_SAVE_IMG = "application/images"
+PATH_DATA = "app/application/dataset/ConsumptionDE35Hour.txt"
+DIR_SAVE_CKP = "app/application/weight"
+DIR_SAVE_CKP_ONLINE = "app/application/checkpoints_online"
+DIR_SAVE_IMG = "app/application/images"
 
 # Hyper parameter
 NUM_EPOCH = 10
 
 # MLflow
 MLFLOW_ENDPOINT = "http://localhost:5000"
-BEST_RUN_ID = "b1006048238748c893ab0ed7f43b6433"
+BEST_RUN_ID = "96643ba262e9442998a5e1a6cfc622f5"
 
 # API
-STATIC = "application/api/static"
+STATIC = "app/application/api/static"

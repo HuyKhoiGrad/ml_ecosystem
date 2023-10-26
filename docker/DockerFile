@@ -1,4 +1,16 @@
-# syntax=docker/dockerfile:1
-FROM apache/airflow:2.2.4-python3.9
+FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
 WORKDIR /ml_ecosystem
-RUN pip install -r /app/requirements.txt 
+COPY ./app/requirements.txt ./app/requirements.txt
+
+RUN apt-get update && apt-get install -y bash && apt install -y libc6-dev
+RUN apt-get install -y gcc
+RUN pip install -r /ml_ecosystem/app/requirements.txt
+RUN pip install uvicorn
+
+COPY ./app ./app
+
+WORKDIR /ml_ecosystem
+ENV PYTHONPATH /ml_ecosystem
+RUN echo $(python3 -m site --user-base)
+EXPOSE 5050
+CMD ["uvicorn", "app.application.api.feature_api:app", "--port", "5050"]

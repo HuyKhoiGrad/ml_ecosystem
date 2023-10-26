@@ -23,7 +23,7 @@ def add_date_redis():
 
 with DAG(dag_id='demo', 
         start_date=datetime.now(),
-          schedule_interval="* 1 * * *",
+          schedule_interval="* 2 * * *",
           catchup=True) as dag:
     demo_task = PythonOperator(task_id = 'demo',
                                python_callable = add_date_redis)
