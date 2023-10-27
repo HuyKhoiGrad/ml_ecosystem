@@ -41,9 +41,9 @@ def get_batch_inference(store, curr_time, feature_group = None) -> list:
     return batch_data
 
 def ingest_predict_to_source(predict_df: pd.DataFrame, source_db: YugaByteDBController, key: str):
-    source_db.insert_data(table_name='energy.energy_predict',
+    source_db.insert_data(table_name=PREDICT_TABLE,
                           update_data= predict_df,
-                          constraint_key= key)
+                          constraint_key= PREDICT_CONSTRAINT)
 
 
 def execute_batch_inference(exec_datetime = None):
@@ -77,7 +77,7 @@ def execute_batch_inference(exec_datetime = None):
         predict_df['hourutc'] = predict_df['hourutc'] + pd.Timedelta(hours=1)
         predict_df['hourdk'] = predict_df['hourdk'] + pd.Timedelta(hours=1)
         predict_df = predict_df[['hourutc','hourdk','pricearea','consumertype_de35','predict']]
-        ingest_predict_to_source(predict_df, source_db, key = 'energy_predict_pk')
+        ingest_predict_to_source(predict_df, source_db)
 
         # Insert newkey to redis
         next_exec_millisec = exec_millisec + 3600000

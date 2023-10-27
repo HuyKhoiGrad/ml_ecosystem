@@ -7,7 +7,7 @@ FEATURE_GROUP_ONL_VERSION = 1
 # FEATURE_VIEW_ONL_NAME = ''
 # FEATURE_VIEW_ONL_VERSION = ''
 
-SOURCE_DATA_COLUMNS = ['"HourUTC"', '"HourDK"', '"PriceArea"', '"ConsumerType_DE35"', '"TotalCon"']
+SOURCE_DATA_COLUMNS = ['hourutc', 'hourdk', 'pricearea', 'consumertype_de35', 'totalcon']
 
 INIT_HOURUTC_DATA_INGEST = '2023-05-31 21:00:00'
 
@@ -28,3 +28,9 @@ BEST_RUN_ID = "96643ba262e9442998a5e1a6cfc622f5"
 
 # API
 STATIC = "app/application/api/static"
+
+# Yugabyte db
+SOURCE_TABLE = 'energy.energy_consumption'
+SOURCE_CONSTRAINT = 'energy_consumption_pk'
+PREDICT_TABLE = 'energy.energy_predict'
+PREDICT_CONSTRAINT = 'energy_predict_pk'

@@ -13,10 +13,10 @@ from app.config.constant import *
 from app.application.utils.Logging import Logger
 
 
-logger = Logger("Ingest training batch data")
+logger = Logger("UploadFeatureToHopsworks")
 
 def get_source_data(curr_time: str, cols: list, source_db:YugaByteDBController) -> pd.DataFrame:
-    sql = f"""SELECT * from energy.energy_consumption where hourutc + interval '1hour' = '{curr_time}' """
+    sql = f"""SELECT * from {SOURCE_TABLE} where hourutc + interval '1hour' = '{curr_time}' """
     source_data = source_db.get_data(sql = sql, col_name = cols)
     logger.info("Query source data success")
     return source_data
