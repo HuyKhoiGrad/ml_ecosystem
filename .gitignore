@@ -167,6 +167,8 @@ checkpoints_online
 dataset/
 experiments/
 scheduler/
+weight/
+
 .vscode/
 
 ca_chain
