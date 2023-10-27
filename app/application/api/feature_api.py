@@ -33,7 +33,7 @@ def ingest_data_to_featurestore(payload: runtime):
 @app.post("/ingest", response_model=ResponseModel, status_code=200)
 def ingest_data_to_featurestore(payload: runtime):
     curr_time = payload.current_time
-    msg = exec_ingest_data_to_dwh(latest_checkpoint = curr_time)
+    msg = exec_ingest_source_data(latest_checkpoint = curr_time)
     response = ResponseModel()
     response.msg = msg
     return json.dumps(response.__dict__)
